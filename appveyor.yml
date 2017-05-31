@@ -2,7 +2,7 @@ image: Visual Studio 2017
 
 install:
   - choco install gitversion.portable -pre -y
-  
+
 before_build:
   - ps: |
       dotnet restore quince.sln
