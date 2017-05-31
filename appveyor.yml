@@ -7,7 +7,7 @@ before_build:
   - ps: |
       dotnet restore quince.sln
       gitversion /l console /output buildserver /updateassemblyinfo
-	  
+
 configuration: Release
 
 build:
