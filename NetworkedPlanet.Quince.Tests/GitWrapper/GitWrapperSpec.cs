@@ -7,6 +7,7 @@ using Xunit;
 namespace NetworkedPlanet.Quince.Tests.GitWrapper
 {
     [Collection("Basic Repository Collection")]
+    [Trait("Category", "GitWrapper")]
     public class GitWrapperSpec : IDisposable
     {
         private readonly RepositoryFixture _fixture;
