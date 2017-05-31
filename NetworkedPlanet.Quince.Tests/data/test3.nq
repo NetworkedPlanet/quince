@@ -1,0 +1,7 @@
+<http://example.org/s/0> <http://example.org/p/0> <http://example.org/o/0> <http://example.org/g/1>.
+<http://example.org/s/0> <http://example.org/p/1> <http://example.org/o/0> <http://example.org/g/1>.
+<http://example.org/s/0> <http://example.org/p/2> <http://example.org/o/0> <http://example.org/g/1>.
+<http://example.org/s/0> <http://example.org/p/3> <http://example.org/o/0> <http://example.org/g/1>.
+<http://example.org/s/0> <http://example.org/p/4> <http://example.org/o/0> <http://example.org/g/1>.
+<http://example.org/s/1> <http://example.org/p/0> <http://example.org/s/0> <http://example.org/g/1>.
+<http://example.org/s/1> <http://example.org/p/1> <http://example.org/s/0> <http://example.org/g/1>.
