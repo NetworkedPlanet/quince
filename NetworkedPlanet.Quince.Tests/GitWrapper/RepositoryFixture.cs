@@ -34,12 +34,6 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             var taskResult = Command.Run("git", "init", repoPath).Result;
             if (!taskResult.Success)
                 throw new Exception("Setup failed - could not initialise test empty repo at " + repoPath);
-            var configEmailResult = Command.Run("git", "config", "user.email", "test@example.com").Result;
-            if (!configEmailResult.Success)
-                throw new Exception("Setup failed - could not configure repo user email at " + repoPath);
-            var configNameResult = Command.Run("git", "config", "user.name", "Test User").Result;
-            if (!configNameResult.Success) 
-                throw new Exception("Setup failed - could nto configure repo user name at " + repoPath);
         }
 
         private void InitialisePopulatedRepository()
