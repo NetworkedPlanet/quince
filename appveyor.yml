@@ -10,9 +10,9 @@ before_build:
 
 configuration: Release
 
-build:
-  project: quince.sln
-  verbosity: minimal
+build_script: |
+  dotnet build
+  dotnet pack -c Release -o %APPVEYOR_BUILD_FOLDER%\nugets NetworkedPlanet.Quince /p:Version=%GitVersion_NugetVersion%
 
 test_script:
   - ps: |
@@ -25,12 +25,13 @@ deploy:
     auth_token:
       secure: waxwfb392oVPzFIbYEaIfOdJKngTc6g5cN5JAm0+Bp5rGj9Rr5oOrWVQAQsUxO+r
     on:
-      branch: master
       appveyor_repo_tag: true
   - provider: NuGet
     api_key:
       secure: N57iFqvcmprSMr6osAMQbT1dpRFW4iZYGGB4ftR+Cd2co5ctbspGo1B8nY/+91Ua
     on:
-      branch: master
       appveyor_repo_tag: true
     artifact: /.*\.nupkg/
+
+artifacts:
+  - path: 'nugets\*.nupkg'
