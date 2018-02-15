@@ -12,15 +12,6 @@
     <Tags>RDF, Git</Tags>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net46'">
-    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <DefineConstants>$(DefineConstants);NETCORE</DefineConstants>
-  </PropertyGroup>
-  
   <ItemGroup>
     <PackageReference Include="dotNetRDF" Version="2.0.1" />
     <PackageReference Include="MedallionShell" Version="1.5.0" />
