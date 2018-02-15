@@ -6,7 +6,7 @@
     <PackageId>Quince</PackageId>
     <Authors>kal_ahmed</Authors>
     <Description>A simple, file-based, Git-friendly RDF store</Description>
-    <Copyright>Copyright (c) 2017 Networked Planet Limited. All rights reserved.</Copyright>
+    <Copyright>Copyright (c) 2017-2018 Networked Planet Limited. All rights reserved.</Copyright>
     <LicenseUrl>https://raw.githubusercontent.com/NetworkedPlanet/quince/master/LICENSE</LicenseUrl>
     <ProjectUrl>https://github.com/networkedplanet/quince/</ProjectUrl>
     <Tags>RDF, Git</Tags>
