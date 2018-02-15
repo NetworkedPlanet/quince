@@ -86,9 +86,9 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.NotNull(diffResult);
             Assert.NotNull(diffResult.CommandResult);
             Assert.True(diffResult.Success);
-            Assert.Equal(1, diffResult.FileDiffs.Count);
-            Assert.Equal(1, diffResult.FileDiffs[0].Inserted.Count);
-            Assert.Equal(0, diffResult.FileDiffs[0].Deleted.Count);
+            Assert.Single(diffResult.FileDiffs);
+            Assert.Single(diffResult.FileDiffs[0].Inserted);
+            Assert.Empty(diffResult.FileDiffs[0].Deleted);
             Assert.Equal("Inserted Line", diffResult.FileDiffs[0].Inserted[0]);
         }
 
@@ -105,9 +105,9 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.NotNull(diffResult);
             Assert.NotNull(diffResult.CommandResult);
             Assert.True(diffResult.Success);
-            Assert.Equal(1, diffResult.FileDiffs.Count);
-            Assert.Equal(1, diffResult.FileDiffs[0].Deleted.Count);
-            Assert.Equal(0, diffResult.FileDiffs[0].Inserted.Count);
+            Assert.Single(diffResult.FileDiffs);
+            Assert.Single(diffResult.FileDiffs[0].Deleted);
+            Assert.Empty(diffResult.FileDiffs[0].Inserted);
             Assert.Equal("Line 2", diffResult.FileDiffs[0].Deleted[0]);
         }
 
@@ -124,9 +124,9 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.NotNull(diffResult);
             Assert.NotNull(diffResult.CommandResult);
             Assert.True(diffResult.Success);
-            Assert.Equal(1, diffResult.FileDiffs.Count);
+            Assert.Single(diffResult.FileDiffs);
             Assert.Equal(3, diffResult.FileDiffs[0].Deleted.Count);
-            Assert.Equal(0, diffResult.FileDiffs[0].Inserted.Count);
+            Assert.Empty(diffResult.FileDiffs[0].Inserted);
             Assert.Equal("Line 1", diffResult.FileDiffs[0].Deleted[0]);
             Assert.Equal("Line 2", diffResult.FileDiffs[0].Deleted[1]);
             Assert.Equal("Line 3", diffResult.FileDiffs[0].Deleted[2]);
@@ -146,9 +146,9 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.NotNull(diffResult);
             Assert.NotNull(diffResult.CommandResult);
             Assert.True(diffResult.Success);
-            Assert.Equal(1, diffResult.FileDiffs.Count);
+            Assert.Single(diffResult.FileDiffs);
             Assert.Equal(2, diffResult.FileDiffs[0].Inserted.Count);
-            Assert.Equal(0, diffResult.FileDiffs[0].Deleted.Count);
+            Assert.Empty(diffResult.FileDiffs[0].Deleted);
             Assert.Equal("Hello", diffResult.FileDiffs[0].Inserted[0]);
             Assert.Equal("World", diffResult.FileDiffs[0].Inserted[1]);
         }
@@ -165,7 +165,7 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.True(wrapper.AddAll().Result.Success);
             var statusResult = wrapper.Status().Result;
             Assert.True(statusResult.Success);
-            Assert.Equal(1, statusResult.ModifiedFiles.Count);
+            Assert.Single(statusResult.ModifiedFiles);
             Assert.Equal("test.txt", statusResult.ModifiedFiles[0]);
         }
 
@@ -179,7 +179,7 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.True(wrapper.AddAll().Result.Success);
             var statusResult = wrapper.Status().Result;
             Assert.True(statusResult.Success);
-            Assert.Equal(1, statusResult.DeletedFiles.Count);
+            Assert.Single(statusResult.DeletedFiles);
             Assert.Equal("test.txt", statusResult.DeletedFiles[0]);
         }
 
@@ -193,7 +193,7 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.True(wrapper.AddAll().Result.Success);
             var statusResult = wrapper.Status().Result;
             Assert.True(statusResult.Success);
-            Assert.Equal(1, statusResult.NewFiles.Count);
+            Assert.Single(statusResult.NewFiles);
             Assert.Equal("new.txt", statusResult.NewFiles[0]);
         }
 

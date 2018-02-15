@@ -20,12 +20,10 @@ namespace NetworkedPlanet.Quince.Git
             _shell = new Shell(options =>
             {
                 options.WorkingDirectory(Path.GetFullPath(workingDirectory));
-#if !NETCORE
                 if (ceilingDirectory != null)
                 {
-                    options.EnvironmentVariable("GIT_CEILING_DIRECTORIES", ceilingDirectory);
+                    options.StartInfo(x => x.EnvironmentVariables.Add("GIT_CEILING_DIRECTORIES", ceilingDirectory));
                 }
-#endif
             });
             _git = gitPath;
         }

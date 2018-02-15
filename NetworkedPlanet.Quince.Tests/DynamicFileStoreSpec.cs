@@ -67,9 +67,9 @@ namespace NetworkedPlanet.Quince.Tests
                 var dirMapPath = Path.Combine(repoFixture.BaseDirectory.FullName, "dirmap.txt");
                 Assert.True(File.Exists(dirMapPath));
                 var dirMapLines = File.ReadAllLines(dirMapPath);
-                Assert.True(dirMapLines.Any(x=>x.Equals("_s")));
-                Assert.True(dirMapLines.Any(x=>x.Equals("_o")));
-                Assert.True(dirMapLines.Any(x=>x.Equals("_p")));
+                Assert.Contains(dirMapLines, x =>x.Equals("_s"));
+                Assert.Contains(dirMapLines, x =>x.Equals("_o"));
+                Assert.Contains(dirMapLines, x =>x.Equals("_p"));
                 Assert.True(dirMapLines.All(x=>x.StartsWith("_s") || x.StartsWith("_o") || x.StartsWith("_p")));
             }
         }
