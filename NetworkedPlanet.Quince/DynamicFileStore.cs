@@ -173,6 +173,11 @@ namespace NetworkedPlanet.Quince
             return "_o" + GetPath(nodeStr);
         }
 
+        private string GetObjectFileName(Uri uri)
+        {
+            return "_o" + GetPath("<" + uri + ">");
+        }
+
         private string GetPredicateFileName(INode node)
         {
             var nodeStr = _lineFormat.Format(node, TripleSegment.Predicate);
@@ -408,6 +413,17 @@ namespace NetworkedPlanet.Quince
             var lines = GetFileContent(filePath);
             var triplesHandler = new FilteredTriplesList();
             _lineReader.Load(triplesHandler, new StringReader(string.Join("\n", lines.Where(l=>l.StartsWith(subject)))));
+            return triplesHandler.Triples;
+        }
+
+        public IEnumerable<Triple> GetTriplesForObject(Uri objectUri)
+        {
+            var objectPath = GetObjectFileName(objectUri);
+            var filePath = GetFilePath(objectPath);
+            var lines = GetFileContent(filePath);
+            var triplesHandler = new FilteredTriplesList(t => (t.Object as IUriNode)?.Uri.Equals(objectUri) ?? false);
+            var nodeStr = "<" + objectUri + ">";
+            _lineReader.Load(triplesHandler, new StringReader(string.Join("\n", lines.Where(l => l.Contains(nodeStr)))));
             return triplesHandler.Triples;
         }
 

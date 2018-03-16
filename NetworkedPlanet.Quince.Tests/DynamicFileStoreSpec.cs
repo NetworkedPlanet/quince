@@ -59,6 +59,57 @@ namespace NetworkedPlanet.Quince.Tests
         }
 
         [Fact]
+        public void CanGetTriplesWithSpecificSubject()
+        {
+            using (var repoFixture = new RepositoryFixture("test-getbysubject"))
+            {
+                repoFixture.Import("data\\test1.nq");
+                var target = new Uri("http://example.org/s/0");
+                var triples = repoFixture.Store.GetTriplesForSubject(target).ToList();
+                triples.Count.Should().Be(5);
+                triples.All(t => (t.Subject as IUriNode)?.Uri.Equals(target) ?? false).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public void ItShouldReturnAnEmptyEnumerationWhenTheSpecifiedSubjectDoesNotExist()
+        {
+            using (var repoFixture = new RepositoryFixture("test-getbyinvalidsubject"))
+            {
+                repoFixture.Import("data\\test1.nq");
+                var target = new Uri("http://example.org/o/0");
+                var triples = repoFixture.Store.GetTriplesForSubject(target);
+                triples.Should().BeEmpty();
+            }
+        }
+
+        [Fact]
+        public void CanGetTriplesWithSpecificObject()
+        {
+            using (var repoFixture = new RepositoryFixture("test-getbyobject"))
+            {
+                repoFixture.Import("data\\test1.nq");
+                var target = new Uri("http://example.org/o/0");
+                var triples = repoFixture.Store.GetTriplesForObject(target).ToList();
+                triples.Count.Should().Be(5);
+                triples.All(t => (t.Object as IUriNode)?.Uri.Equals(target) ?? false).Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public void ItReturnsAnEmptyEnumerationWhenTheSpecifiedObjectDoesNotExist()
+        {
+            using (var repoFixture = new RepositoryFixture("test-getbyinvalidobject"))
+            {
+                repoFixture.Import("data\\test1.nq");
+                var target = new Uri("http://example.org/s/0");
+                var triples = repoFixture.Store.GetTriplesForObject(target).ToList();
+                triples.Should().BeEmpty();
+            }
+
+        }
+
+        [Fact]
         public void CreatesDirectoryMap()
         {
             using (var repoFixture = new RepositoryFixture("test-enumerate"))

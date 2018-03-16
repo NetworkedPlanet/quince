@@ -45,11 +45,25 @@ namespace NetworkedPlanet.Quince
         IEnumerable<Triple> GetTriplesForSubject(INode subjectNode);
 
         /// <summary>
+        /// Retrieves all quads for a given subject
+        /// </summary>
+        /// <param name="subjectUri">The subject to retrieve quads for</param>
+        /// <returns></returns>
+        IEnumerable<Triple> GetTriplesForSubject(Uri subjectUri);
+
+        /// <summary>
         /// Retrieves all quads for a given object
         /// </summary>
         /// <param name="objectNode">The object to retrieve quads for</param>
         /// <returns></returns>
         IEnumerable<Triple> GetTriplesForObject(INode objectNode);
+
+        /// <summary>
+        /// Retrieves all quads for a given object
+        /// </summary>
+        /// <param name="objectUri">The object to retrieve quads for</param>
+        /// <returns></returns>
+        IEnumerable<Triple> GetTriplesForObject(Uri objectUri);
 
         /// <summary>
         /// Retrieves all triples in the repository, grouping triples
