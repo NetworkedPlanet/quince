@@ -8,7 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace NetworkedPlanet.Quince.Git
 {
-    public class GitWrapper
+    /// <summary>
+    /// A standard implementation of the <see cref="IGitWrapper"/> interface that uses MedallionShell to execute Git commands
+    /// </summary>
+    public class GitWrapper : IGitWrapper
     {
         private readonly string _git;
         private readonly Shell _shell;

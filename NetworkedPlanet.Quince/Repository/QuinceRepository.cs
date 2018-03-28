@@ -13,16 +13,16 @@ namespace NetworkedPlanet.Quince.Repository
     public class QuinceRepository : IPathResolver
     {
         private readonly string _repositoryPath;
-        private readonly string _gitPath;
         public IQuinceStore QuinceStore { get; private set; }
         private int _cacheThreshold = DefaultCacheThreshold;
         public  IGraph ConfigGraph { get; }
         public INode RepositoryConfigurationNode { get; private set; }
+        private readonly IGitWrapperFactory _gitWrapperFactory;
 
         public const int DefaultCacheThreshold = 1000;
         private static readonly ILogger Log = QuinceLogging.CreateLogger<QuinceRepository>();
 
-        public QuinceRepository(string repositoryPath, string gitPath, IGraph configurationGraph)
+        public QuinceRepository(string repositoryPath, IGraph configurationGraph, IGitWrapperFactory gitWrapperFactory)
         {
             if (!Directory.Exists(repositoryPath))
             {
@@ -30,7 +30,7 @@ namespace NetworkedPlanet.Quince.Repository
                 throw new RepositoryNotFoundException(repositoryPath);
             }
             _repositoryPath = repositoryPath;
-            _gitPath = gitPath;
+            _gitWrapperFactory = gitWrapperFactory;
             ConfigGraph = configurationGraph;
             ReadConfiguration();
         }
@@ -98,7 +98,7 @@ namespace NetworkedPlanet.Quince.Repository
         public async Task<BranchStatus> GetEditBranchStatus(string editBranchName)
         {
             Log.LogTrace("GetEditBranchStatus: {0}", editBranchName);
-            var git = new Git.GitWrapper(_repositoryPath, _gitPath);
+            var git = _gitWrapperFactory.MakeGitWrapper(_repositoryPath);
             var branchList = await git.ListBranches(editBranchName);
             if (branchList.Length == 0) return null;
             var aheadCount =
@@ -111,7 +111,7 @@ namespace NetworkedPlanet.Quince.Repository
         public async Task<CreateEditBranchResponse> CreateEditBranch(string editBranchName, string originBranch = "develop")
         {
             Log.LogTrace("CreateEditBranch: {0}, {1}", editBranchName, originBranch);
-            var git = new Git.GitWrapper(_repositoryPath, _gitPath);
+            var git = _gitWrapperFactory.MakeGitWrapper(_repositoryPath);
             var branches = await git.ListBranches(editBranchName);
             if (branches.Length > 0)
             {
@@ -143,7 +143,7 @@ namespace NetworkedPlanet.Quince.Repository
         public async Task<bool> Commit(string commitMessage, string commitAuthor, string commitBody = null)
         {
             Log.LogTrace("Commit: {0}, {1}", commitMessage, commitAuthor);
-            var git = new GitWrapper(_repositoryPath, _gitPath);
+            var git = _gitWrapperFactory.MakeGitWrapper(_repositoryPath);
             var addResult = await git.AddAll();
             if (!addResult.Success)
             {
@@ -160,7 +160,7 @@ namespace NetworkedPlanet.Quince.Repository
 
         public async Task<StartMergeResponse> StartMerge(string editBranchName, string stagingBranchName)
         {
-            var git = new GitWrapper(_repositoryPath, _gitPath);
+            var git = _gitWrapperFactory.MakeGitWrapper(_repositoryPath);
 
             // Pull develop branch updates
             var fetchResult = await git.Fetch();
@@ -245,7 +245,7 @@ namespace NetworkedPlanet.Quince.Repository
 
         public async Task<bool> CompleteMerge(string editBranchName, string stagingBranchName)
         {
-            var git = new GitWrapper(_repositoryPath, _gitPath);
+            var git = _gitWrapperFactory.MakeGitWrapper(_repositoryPath);
 
             // Checkout develop branch
             var checkoutResult = await git.SetBranch("develop");
@@ -289,7 +289,7 @@ namespace NetworkedPlanet.Quince.Repository
 
         public async Task<QuinceDiff> Diff(string commit)
         {
-            var git = new GitWrapper(_repositoryPath, _gitPath);
+            var git = _gitWrapperFactory.MakeGitWrapper(_repositoryPath);
             var gitDiff = await git.Diff(commit);
             if (!gitDiff.Success)
             {

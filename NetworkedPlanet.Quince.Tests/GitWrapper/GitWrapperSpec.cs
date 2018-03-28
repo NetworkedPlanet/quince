@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NetworkedPlanet.Quince.Git;
 using Xunit;
 
 namespace NetworkedPlanet.Quince.Tests.GitWrapper
@@ -59,6 +60,23 @@ namespace NetworkedPlanet.Quince.Tests.GitWrapper
             Assert.True(Directory.Exists(Path.Combine(_testId, ".git")));
             Assert.True(File.Exists(Path.Combine(_testId, "test.txt")));
             _tempList.Add(_testId);
+        }
+
+        [Fact]
+        public async void GitWrapperFactoryReturnsProperlyConfiguredGitWrapper()
+        {
+            var wrapperFactory = new DefaultGitWrapperFactory("git");
+            var cloneWrapper = wrapperFactory.MakeGitWrapper(".");
+            var cloneResult = await cloneWrapper.Clone(_fixture.PopulatedRepositoryPath, _testId);
+            Assert.True(cloneResult.Success);
+            Assert.True(Directory.Exists(_testId));
+            Assert.True(Directory.Exists(Path.Combine(_testId, ".git")));
+            Assert.True(File.Exists(Path.Combine(_testId, "test.txt")));
+            _tempList.Add(_testId);
+
+            var repoWrapper = wrapperFactory.MakeGitWrapper(_testId);
+            var statusResult = await repoWrapper.Status();
+            Assert.True(statusResult.Success);
         }
 
         [Fact]
