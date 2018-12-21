@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using VDS.Common.Tries;
@@ -546,9 +547,26 @@ namespace NetworkedPlanet.Quince
             Log.LogDebug("FlushCache: {0} entries written in {1} seconds", cacheCount, timer.Elapsed.TotalSeconds);
         }
 
+        private Regex SplitRegex = new Regex("(?<s>(_:[^\\s]+)|(<[^>]+>))\\s+(?<p>(_:[^\\s]+)|(<[^>]+>))\\s+(?<o>(_:[^\\s]+)|(<[^>]+>)|\"[^\"]*\"(@\\S+)?(\\^\\^<[^>]+>)?)\\s+(?<g>(_:[^\\s]+)|(<[^>]+>))\\s*\\.");
+
         private bool CanSplit(IReadOnlyList<string> lines, TripleSegment segment)
         {
             if (lines.Count < _splitThreshold) return false;
+            //return CanSplitParser(lines, segment);
+            return CanSplitRegex(lines, segment);
+        }
+
+        private bool CanSplitRegex(IReadOnlyList<string> lines, TripleSegment segment)
+        {
+            var segmentGroup = segment == TripleSegment.Subject ? "s" : segment == TripleSegment.Predicate ? "p" : "o";
+            var firstNode = SplitRegex.Match(lines[0]).Groups[segmentGroup].Value;
+            return lines.Skip(1).Any(l => SplitRegex.Match(l).Groups[segmentGroup].Value != firstNode);
+
+            //return lines.Any(l => SplitRegex.Match(l).Groups[segmentGroup].Value != firstNode);
+        }
+
+        private bool CanSplitParser(IReadOnlyList<string> lines, TripleSegment segment)
+        {
             var singleLineHandler = new SingleLineHandler();
             _lineReader.Load(singleLineHandler, new StringReader(lines[0]));
             var firstNode = segment == TripleSegment.Subject
