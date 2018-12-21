@@ -27,6 +27,12 @@ namespace NetworkedPlanet.Quince
         void Retract(INode subject, INode predicate, INode obj, Uri graph);
 
         /// <summary>
+        /// Add all the quads in the specified graph to the store
+        /// </summary>
+        /// <param name="graph">The graph to be added to the store</param>
+        void Assert(IGraph graph);
+
+        /// <summary>
         /// Retracts all of the triples in the specified graph
         /// </summary>
         /// <param name="graph">The graph to be dropped</param>
