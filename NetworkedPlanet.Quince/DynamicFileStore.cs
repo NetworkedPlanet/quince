@@ -220,13 +220,6 @@ namespace NetworkedPlanet.Quince
             var ix = lines.BinarySearch(line);
             if (ix >= 0) return false;
             lines.Insert(~ix, line);
-            if (lines.Count > _splitThreshold)
-            {
-                if (CanSplit(lines, segment))
-                {
-                    SplitFile(storePath, lines, segment);
-                }
-            }
             return true;
         }
 
@@ -526,6 +519,22 @@ namespace NetworkedPlanet.Quince
             var cacheCount = cache.Count;
             var timer = new Stopwatch();
             timer.Start();
+
+            var toFlush = cache.Keys.ToList();
+            foreach (var fileName in toFlush)
+            {
+                var lines = cache[fileName];
+                if (lines.Count > _splitThreshold)
+                {
+                    var segment = fileName.StartsWith("_s") ? TripleSegment.Subject :
+                        fileName.StartsWith("_p") ? TripleSegment.Predicate : TripleSegment.Object;
+                    if (CanSplit(lines, segment))
+                    {
+                        SplitFile(fileName, lines, segment);
+                    }
+                }
+            }
+
             foreach (var pair in cache)
             {
                 var targetPath = Path.Combine(_baseDirectory.FullName, pair.Key);
@@ -547,23 +556,24 @@ namespace NetworkedPlanet.Quince
             Log.LogDebug("FlushCache: {0} entries written in {1} seconds", cacheCount, timer.Elapsed.TotalSeconds);
         }
 
-        private Regex SplitRegex = new Regex("(?<s>(_:[^\\s]+)|(<[^>]+>))\\s+(?<p>(_:[^\\s]+)|(<[^>]+>))\\s+(?<o>(_:[^\\s]+)|(<[^>]+>)|\"[^\"]*\"(@\\S+)?(\\^\\^<[^>]+>)?)\\s+(?<g>(_:[^\\s]+)|(<[^>]+>))\\s*\\.");
 
         private bool CanSplit(IReadOnlyList<string> lines, TripleSegment segment)
         {
-            if (lines.Count < _splitThreshold) return false;
-            //return CanSplitParser(lines, segment);
-            return CanSplitRegex(lines, segment);
+            return lines.Count >= _splitThreshold && CanSplitParser(lines, segment);
+            //return CanSplitRegex(lines, segment);
         }
+
+        // KA - Regex-based checking is slightly faster than using the DNR parser, but the parser is less likely to be wrong :-)
+        /*
+        private Regex SplitRegex = new Regex("(?<s>(_:[^\\s]+)|(<[^>]+>))\\s+(?<p>(_:[^\\s]+)|(<[^>]+>))\\s+(?<o>(_:[^\\s]+)|(<[^>]+>)|\"[^\"]*\"(@\\S+)?(\\^\\^<[^>]+>)?)\\s+(?<g>(_:[^\\s]+)|(<[^>]+>))\\s*\\.");
 
         private bool CanSplitRegex(IReadOnlyList<string> lines, TripleSegment segment)
         {
             var segmentGroup = segment == TripleSegment.Subject ? "s" : segment == TripleSegment.Predicate ? "p" : "o";
             var firstNode = SplitRegex.Match(lines[0]).Groups[segmentGroup].Value;
             return lines.Skip(1).Any(l => SplitRegex.Match(l).Groups[segmentGroup].Value != firstNode);
-
-            //return lines.Any(l => SplitRegex.Match(l).Groups[segmentGroup].Value != firstNode);
         }
+        */
 
         private bool CanSplitParser(IReadOnlyList<string> lines, TripleSegment segment)
         {
