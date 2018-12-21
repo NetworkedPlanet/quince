@@ -62,8 +62,17 @@ namespace NetworkedPlanet.Quince
                 var objectPath = GetFilePath(objectFileName);
                 Assert(TripleSegment.Object, lineStr, objectPath);
                 var predicateFileName = GetPredicateFileName(predicate);
-                var preidcatePath = GetFilePath(predicateFileName);
-                Assert(TripleSegment.Predicate, lineStr, preidcatePath);
+                var predicatePath = GetFilePath(predicateFileName);
+                Assert(TripleSegment.Predicate, lineStr, predicatePath);
+            }
+        }
+
+        public void Assert(IGraph graph)
+        {
+            Log.LogTrace($"AssertGraph: {graph.BaseUri}");
+            foreach (var t in graph.Triples)
+            {
+                Assert(t.Subject, t.Predicate, t.Object, graph.BaseUri);
             }
         }
 
