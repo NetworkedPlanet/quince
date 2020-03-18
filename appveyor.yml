@@ -4,20 +4,17 @@ install:
   - choco install gitversion.portable -pre -y
 
 before_build:
-  - ps: |
-      dotnet restore quince.sln
-      gitversion /l console /output buildserver /updateassemblyinfo
+  - ps: gitversion /l console /output buildserver /updateassemblyinfo
 
 configuration: Release
 
-build_script: |
-  dotnet build
-  dotnet pack -c Release -o %APPVEYOR_BUILD_FOLDER%\nugets NetworkedPlanet.Quince /p:Version=%GitVersion_NugetVersion%
+build_script:
+  - ps: dotnet build
+  - ps: dotnet pack -c Release -o %APPVEYOR_BUILD_FOLDER%\nugets NetworkedPlanet.Quince /p:Version=%GitVersion_NugetVersion%
 
 test_script:
-  - ps: |
-      cd NetworkedPlanet.Quince.Tests
-      dotnet test --filter "Category!=GitWrapper"
+  - ps: cd NetworkedPlanet.Quince.Tests
+  - ps: dotnet test --filter "Category!=GitWrapper"
 
 deploy:
   - provider: GitHub
