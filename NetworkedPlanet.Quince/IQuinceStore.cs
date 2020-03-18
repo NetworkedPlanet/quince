@@ -86,5 +86,18 @@ namespace NetworkedPlanet.Quince
         /// </summary>
         /// <param name="handler">A handler that will receive the resource node, the collection of statements with that resource as subject and the collection of statements with that resource as object</param>
         void EnumerateSubjects(IResourceStatementHandler handler);
+
+        /// <summary>
+        /// Get all triples in the repository with a non-literal object,
+        /// grouping triples by common object
+        /// </summary>
+        /// <param name="handler">A handler that will receive the collection of statements with a specific non-literal resource as object</param>
+        void EnumerateObjects(ITripleCollectionHandler handler);
+
+        /// <summary>
+        /// Enumerate all non-literal objects in the repository
+        /// </summary>
+        /// <param name="handler">A handler that will receive the object resource node, the collection of statements with that resource as subject and the collection of statements with that resource as object</param>
+        void EnumerateObjects(IResourceStatementHandler handler);
     }
 }

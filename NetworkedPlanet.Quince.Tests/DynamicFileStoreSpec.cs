@@ -158,6 +158,40 @@ namespace NetworkedPlanet.Quince.Tests
                 testHandler.TotalObjectStatements.Should().Be(2);
             }
         }
+
+        [Fact]
+        public void CanEnumerateObjectStatements()
+        {
+            using (var repoFixture = new RepositoryFixture("test-enumerate"))
+            {
+                repoFixture.Import("data\\test3.nq");
+                var testHandler = new TestResourceStatementHandler((objectNode, subjectStatements, objectStatements) =>
+                    {
+                        subjectStatements.All(x => x.Subject.Equals(objectNode)).Should().BeTrue();
+                        objectStatements.All(x => x.Object.Equals(objectNode)).Should().BeTrue();
+                    });
+                repoFixture.Store.EnumerateObjects(testHandler);
+                testHandler.TotalSubjects.Should().Be(2);
+                testHandler.TotalSubjectStatements.Should().Be(5);
+                testHandler.TotalObjectStatements.Should().Be(7);
+            }
+        }
+
+        [Fact]
+        public void CanEnumerateObjectsSmall()
+        {
+            using (var repoFixture = new RepositoryFixture("test-enumerate"))
+            {
+                repoFixture.Import("data\\test2.nq");
+                var testHandler = new TestTripleCollectionHandler(tc =>
+                {
+                    tc.Count.Should().Be(5);
+                    tc.All(x => x.Object.Equals(tc[0].Object)).Should().BeTrue();
+                });
+                repoFixture.Store.EnumerateSubjects(testHandler);
+                testHandler.TotalCount.Should().Be(1);
+            }
+        }
     }
 
     public class TestTripleCollectionHandler : ITripleCollectionHandler
