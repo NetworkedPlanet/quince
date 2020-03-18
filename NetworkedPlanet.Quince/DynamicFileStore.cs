@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using VDS.Common.Tries;
@@ -299,18 +298,6 @@ namespace NetworkedPlanet.Quince
             }
         }
 
-        private void EnumerateSubjectsInFile(FileInfo triplesFileInfo, ITripleCollectionHandler tripleCollectionHandler)
-        {
-            var handler = new SubjectEnumerationHandler(tripleCollectionHandler);
-            var parser = new NQuadsParser();
-            var defaultGraph = new Graph();
-            using (var reader = File.OpenText(triplesFileInfo.FullName))
-            {
-                parser.Parse(reader, handler.HandleTriple, defaultGraph);
-                handler.Flush();
-            }
-        }
-
         public void EnumerateSubjects(IResourceStatementHandler resourceStatementHandler)
         {
             var subjectsFilePath = Path.Combine(_baseDirectory.FullName, "_s.nq");
@@ -329,9 +316,52 @@ namespace NetworkedPlanet.Quince
             }
         }
 
-        private void EnumerateSubjectsInFile(FileInfo triplesFileInfo, IResourceStatementHandler resourceStatementHandler)
+        public void EnumerateObjects(ITripleCollectionHandler handler)
         {
-            var handler = new SubjectEnumerationHandler(new ResourceEnumerationHandler(this, resourceStatementHandler));
+            var objectsFilePath = Path.Combine(_baseDirectory.FullName, "_o.nq");
+            if (File.Exists(objectsFilePath))
+            {
+                EnumerateObjectsInFile(new FileInfo(objectsFilePath), handler);
+            }
+
+            var objectsDirectoryPath = Path.Combine(_baseDirectory.FullName, "_o");
+            var objectsDirectory = new DirectoryInfo(objectsDirectoryPath);
+            if (objectsDirectory.Exists)
+            {
+                IterateFiles(objectsDirectory, f=> EnumerateObjectsInFile(f, handler));
+            }
+        }
+
+        public void EnumerateObjects(IResourceStatementHandler handler)
+        {
+            var objectsFilePath = Path.Combine(_baseDirectory.FullName, "_o.nq");
+            if (File.Exists(objectsFilePath))
+            {
+                EnumerateObjectsInFile(new FileInfo(objectsFilePath), handler);
+            }
+
+            var objectsDirectoryPath = Path.Combine(_baseDirectory.FullName, "_o");
+            var objectsDirectory = new DirectoryInfo(objectsDirectoryPath);
+            if (objectsDirectory.Exists)
+            {
+                IterateFiles(objectsDirectory, f => EnumerateObjectsInFile(f, handler));
+            }
+        }
+
+        private void EnumerateSubjectsInFile(FileInfo triplesFileInfo, ITripleCollectionHandler tripleCollectionHandler)
+        {
+            var handler = new SubjectEnumerationHandler(tripleCollectionHandler);
+            ParseNQuads(triplesFileInfo, handler);
+        }
+
+        private void EnumerateObjectsInFile(FileInfo triplesFileInfo, ITripleCollectionHandler tripleCollectionHandler)
+        {
+            var handler = new ObjectEnumerationHandler(tripleCollectionHandler);
+            ParseNQuads(triplesFileInfo, handler);
+        }
+
+        private static void ParseNQuads(FileInfo triplesFileInfo, NodeEnumerationHandler handler)
+        {
             var parser = new NQuadsParser();
             var defaultGraph = new Graph();
             using (var reader = File.OpenText(triplesFileInfo.FullName))
@@ -339,6 +369,19 @@ namespace NetworkedPlanet.Quince
                 parser.Parse(reader, handler.HandleTriple, defaultGraph);
                 handler.Flush();
             }
+        }
+
+        private void EnumerateObjectsInFile(FileInfo triplesFileInfo,
+            IResourceStatementHandler resourceStatementHandler)
+        {
+            var handler = new ObjectEnumerationHandler(new ObjectResourceEnumerationHandler(this, resourceStatementHandler));
+            ParseNQuads(triplesFileInfo, handler);
+        }
+
+        private void EnumerateSubjectsInFile(FileInfo triplesFileInfo, IResourceStatementHandler resourceStatementHandler)
+        {
+            var handler = new SubjectEnumerationHandler(new ResourceEnumerationHandler(this, resourceStatementHandler));
+            ParseNQuads(triplesFileInfo, handler);
         }
 
         private class ResourceEnumerationHandler : ITripleCollectionHandler
@@ -360,28 +403,49 @@ namespace NetworkedPlanet.Quince
             }
         }
 
-        private class SubjectEnumerationHandler
+        private class ObjectResourceEnumerationHandler : ITripleCollectionHandler
         {
-            
-            private INode _currentSubject;
+            private readonly IQuinceStore _store;
+            private readonly IResourceStatementHandler _resourceStatementHandler;
+
+            public ObjectResourceEnumerationHandler(IQuinceStore store, IResourceStatementHandler resourceStatementHandler)
+            {
+                _store = store;
+                _resourceStatementHandler = resourceStatementHandler;
+            }
+
+            public bool HandleTripleCollection(IList<Triple> tripleCollection)
+            {
+                var objectNode = tripleCollection[0].Object;
+                var subjectStatements = _store.GetTriplesForSubject(objectNode).ToList();
+                return _resourceStatementHandler.HandleResource(objectNode, subjectStatements, tripleCollection);
+            }
+        }
+
+        private class NodeEnumerationHandler
+        {
             private readonly ITripleCollectionHandler _collectionHandler;
+            private readonly Func<Triple, INode> _groupByFunc;
+            private INode _currentKey;
             private List<Triple> _currentCollection;
 
-            public SubjectEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler)
+            protected NodeEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler, Func<Triple, INode> groupBy)
             {
                 _collectionHandler = tripleCollectionHandler;
+                _groupByFunc = groupBy;
             }
 
             public void HandleTriple(Triple t)
             {
-                if (_currentSubject == null)
+                var key = _groupByFunc(t);
+                if (_currentKey == null)
                 {
-                    _currentSubject = t.Subject;
-                    _currentCollection = new List<Triple> {t};
+                    _currentKey = key;
+                    _currentCollection = new List<Triple> { t };
                 }
                 else
                 {
-                    if (_currentSubject.Equals(t.Subject))
+                    if (_currentKey.Equals(key))
                     {
                         _currentCollection.Add(t);
                     }
@@ -391,21 +455,35 @@ namespace NetworkedPlanet.Quince
                         {
                             _collectionHandler.HandleTripleCollection(_currentCollection);
                         }
-                        _currentSubject = t.Subject;
-                        _currentCollection = new List<Triple> {t};
+                        _currentKey = key;
+                        _currentCollection = new List<Triple> { t };
                     }
                 }
             }
 
             public void Flush()
             {
-                if ( _currentCollection != null && _currentCollection.Count > 0)
+                if (_currentCollection != null && _currentCollection.Count > 0)
                 {
                     _collectionHandler.HandleTripleCollection(_currentCollection);
                 }
-                _currentSubject = null;
+                _currentKey = null;
                 _currentCollection = null;
             }
+        }
+
+        private class SubjectEnumerationHandler : NodeEnumerationHandler
+        {
+            public SubjectEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler):base(tripleCollectionHandler, t=>t.Subject)
+            {
+            }
+        }
+
+        private class ObjectEnumerationHandler : NodeEnumerationHandler
+        {
+            public ObjectEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler) : base(
+                tripleCollectionHandler, t => t.Object)
+            { }
         }
 
         public IEnumerable<Triple> GetTriplesForSubject(Uri shapeUri)

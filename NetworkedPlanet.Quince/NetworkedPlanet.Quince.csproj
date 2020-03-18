@@ -13,7 +13,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="dotNetRDF" Version="2.1.0" />
+    <PackageReference Include="dotNetRDF" Version="2.4.0" />
     <PackageReference Include="MedallionShell" Version="1.5.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
   </ItemGroup>

@@ -86,5 +86,17 @@ namespace NetworkedPlanet.Quince
         /// </summary>
         /// <param name="handler">A handler that will receive the resource node, the collection of statements with that resource as subject and the collection of statements with that resource as object</param>
         void EnumerateSubjects(IResourceStatementHandler handler);
+
+        /// <summary>
+        /// Enumerate all object nodes in the repository
+        /// </summary>
+        /// <param name="handler">A handler invoked for each unique object node, that will receive the object node itself and the collection of statements with that node as object</param>
+        void EnumerateObjects(ITripleCollectionHandler handler);
+
+        /// <summary>
+        /// Enumerate all object nodes in the repository
+        /// </summary>
+        /// <param name="handler">A handler that will receive the object node, the collection of statements with that node as subject and the collection of statements with that node as object</param>
+        void EnumerateObjects(IResourceStatementHandler handler);
     }
 }
