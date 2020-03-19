@@ -10,5 +10,3 @@ it is also possible to use line-based diffs such as that provided by Git to tell
 Quince store.
 
 Quince is being used to manage the RDF data in [DataDock.io](http://datadock.io/).
-
-Quince is developed by [NetworkedPlanet](http://networkedplanet.com/), specialists in Linked and Open Data.
