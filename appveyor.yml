@@ -20,12 +20,12 @@ deploy:
   - provider: GitHub
     description: 'quince $(GitVersion_SemVer)'
     auth_token:
-      secure: waxwfb392oVPzFIbYEaIfOdJKngTc6g5cN5JAm0+Bp5rGj9Rr5oOrWVQAQsUxO+r
+      secure: lLPsBvR2OxnrgRpVTNWOneUrcR+yK6S1ANE3WbXVJJOIPu3SWt1NCyZ1cexyzy2i
     on:
       appveyor_repo_tag: true
   - provider: NuGet
     api_key:
-      secure: 9LbrXgsbg5rAAqBzhM7JSGiJHHG30QBu/MT/ISjOOM6P9R0LqBc2WZibXCUpBh6Q
+      secure: we+ycybU7IGDGZ4CHOg+Dw3DuWDz+mrbpC0sn/AtRRgd4UtTpXp07QvB/KXrTsqd
     on:
       appveyor_repo_tag: true
     artifact: /.*\.nupkg/
