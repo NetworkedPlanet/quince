@@ -26,6 +26,9 @@
     <None Update="data\test2.nq">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="data\test2a.nq">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="data\test3.nq">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
