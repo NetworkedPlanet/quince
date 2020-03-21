@@ -360,7 +360,7 @@ namespace NetworkedPlanet.Quince
             ParseNQuads(triplesFileInfo, handler);
         }
 
-        private static void ParseNQuads(FileInfo triplesFileInfo, NodeEnumerationHandler handler)
+        private static void ParseNQuads(FileInfo triplesFileInfo, INodeEnumerationHandler handler)
         {
             var parser = new NQuadsParser();
             var defaultGraph = new Graph();
@@ -422,22 +422,62 @@ namespace NetworkedPlanet.Quince
             }
         }
 
-        private class NodeEnumerationHandler
+        private interface INodeEnumerationHandler
+        {
+            void HandleTriple(Triple t);
+            void Flush();
+        }
+
+        private class NodeEnumerationHandler : INodeEnumerationHandler
         {
             private readonly ITripleCollectionHandler _collectionHandler;
             private readonly Func<Triple, INode> _groupByFunc;
-            private INode _currentKey;
-            private List<Triple> _currentCollection;
+            private readonly Dictionary<INode, List<Triple>> _tripleCollections;
 
             protected NodeEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler, Func<Triple, INode> groupBy)
             {
                 _collectionHandler = tripleCollectionHandler;
                 _groupByFunc = groupBy;
+                _tripleCollections = new Dictionary<INode, List<Triple>>();
             }
 
             public void HandleTriple(Triple t)
             {
                 var key = _groupByFunc(t);
+                if (_tripleCollections.TryGetValue(key, out var collection))
+                {
+                    collection.Add(t);
+                }
+                else
+                {
+                    _tripleCollections[key] = new List<Triple>{t};
+                }
+            }
+
+            public void Flush()
+            {
+                foreach (var k in _tripleCollections.Keys)
+                {
+                    _collectionHandler.HandleTripleCollection(_tripleCollections[k]);
+                }
+                _tripleCollections.Clear();
+            }
+        }
+
+        private class SubjectEnumerationHandler : INodeEnumerationHandler
+        {
+            private readonly ITripleCollectionHandler _tripleCollectionHandler;
+            private INode _currentKey;
+            private List<Triple> _currentCollection;
+
+            public SubjectEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler)
+            {
+                _tripleCollectionHandler = tripleCollectionHandler;
+            }
+
+            public void HandleTriple(Triple t)
+            {
+                var key = t.Subject;
                 if (_currentKey == null)
                 {
                     _currentKey = key;
@@ -453,7 +493,7 @@ namespace NetworkedPlanet.Quince
                     {
                         if (_currentCollection.Count > 0)
                         {
-                            _collectionHandler.HandleTripleCollection(_currentCollection);
+                            _tripleCollectionHandler.HandleTripleCollection(_currentCollection);
                         }
                         _currentKey = key;
                         _currentCollection = new List<Triple> { t };
@@ -465,17 +505,10 @@ namespace NetworkedPlanet.Quince
             {
                 if (_currentCollection != null && _currentCollection.Count > 0)
                 {
-                    _collectionHandler.HandleTripleCollection(_currentCollection);
+                    _tripleCollectionHandler.HandleTripleCollection(_currentCollection);
                 }
                 _currentKey = null;
                 _currentCollection = null;
-            }
-        }
-
-        private class SubjectEnumerationHandler : NodeEnumerationHandler
-        {
-            public SubjectEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler):base(tripleCollectionHandler, t=>t.Subject)
-            {
             }
         }
 
@@ -483,7 +516,8 @@ namespace NetworkedPlanet.Quince
         {
             public ObjectEnumerationHandler(ITripleCollectionHandler tripleCollectionHandler) : base(
                 tripleCollectionHandler, t => t.Object)
-            { }
+            {
+            }
         }
 
         public IEnumerable<Triple> GetTriplesForSubject(Uri shapeUri)

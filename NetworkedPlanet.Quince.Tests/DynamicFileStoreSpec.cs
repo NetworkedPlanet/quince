@@ -192,6 +192,31 @@ namespace NetworkedPlanet.Quince.Tests
                 testHandler.TotalCount.Should().Be(1);
             }
         }
+
+        [Fact]
+        public void CanEnumerateSharedObjects()
+        {
+            using (var repoFixture = new RepositoryFixture("test-enumerate"))
+            {
+                repoFixture.Import("data\\test2a.nq");
+                var testHandler = new TestTripleCollectionHandler(tc =>
+                {
+                    tc.All(x=>x.Object.Equals(tc[0].Object)).Should().BeTrue();
+                    var objectUri = (tc[0].Object as IUriNode)?.Uri?.ToString();
+                    objectUri.Should().NotBeNull();
+                    if (objectUri.Equals("http://example.org/o/0"))
+                    {
+                        tc.Count.Should().Be(3);
+                    }
+                    if (objectUri.Equals("http://example.org/o/1"))
+                    {
+                        tc.Count.Should().Be(2);
+                    }
+                });
+                repoFixture.Store.EnumerateObjects(testHandler);
+                testHandler.TotalCount.Should().Be(2);
+            }
+        }
     }
 
     public class TestTripleCollectionHandler : ITripleCollectionHandler
